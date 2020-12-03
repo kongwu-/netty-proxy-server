@@ -1,5 +1,6 @@
 package cc.leevi.common.httpproxy.upstream;
 
+import cc.leevi.common.httpproxy.HttpProxyChannelContainer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -19,15 +20,18 @@ public class HttpProxyServer {
 
     private Channel acceptorChannel;
 
+    private HttpProxyChannelContainer httpProxyChannelContainer;
 
     public void startServer(){
         logger.info("Proxy Server starting...");
+
+        httpProxyChannelContainer = new HttpProxyChannelContainer();
 
         serverEventLoopGroup = new NioEventLoopGroup(4);
 
         serverBootstrap = new ServerBootstrap()
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new HttpProxyServerInitializer())
+                .childHandler(new HttpProxyServerInitializer(httpProxyChannelContainer))
                 .group(serverEventLoopGroup);
         acceptorChannel = serverBootstrap.bind(8080).syncUninterruptibly().channel();
     }
