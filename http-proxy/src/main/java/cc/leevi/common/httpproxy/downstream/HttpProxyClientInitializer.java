@@ -8,20 +8,14 @@ import io.netty.handler.codec.http.*;
 
 public class HttpProxyClientInitializer extends ChannelInitializer {
 
-    private HttpProxyChannelContainer httpProxyChannelContainer;
+    private Channel upstreamChannel;
 
-    public HttpProxyClientInitializer(HttpProxyChannelContainer httpProxyChannelContainer) {
-        this.httpProxyChannelContainer = httpProxyChannelContainer;
+    public HttpProxyClientInitializer(Channel upstreamChannel) {
+        this.upstreamChannel = upstreamChannel;
     }
 
     protected void initChannel(Channel channel) throws Exception {
         ChannelPipeline p = channel.pipeline();
-        p.addLast(new HttpRequestEncoder());
-        // Uncomment the following line if you don't want to handle HttpChunks.
-        p.addLast(new HttpObjectAggregator(1048576));
-        p.addLast(new HttpResponseDecoder());
-//         Remove the following line if you don't want automatic content compression.
-//        p.addLast(new HttpContentCompressor());
-        p.addLast(new HttpProxyClientHandler(httpProxyChannelContainer));
+        p.addLast(new HttpProxyClientHandler(upstreamChannel));
     }
 }
