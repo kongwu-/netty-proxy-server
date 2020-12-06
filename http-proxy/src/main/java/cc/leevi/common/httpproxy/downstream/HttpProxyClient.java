@@ -1,6 +1,5 @@
 package cc.leevi.common.httpproxy.downstream;
 
-import cc.leevi.common.httpproxy.HttpProxyChannelContainer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -27,8 +26,6 @@ public class HttpProxyClient {
     private String protocolVersion;
 
     private EventLoop upstreamEventLoop;
-
-    private HttpProxyChannelContainer httpProxyChannelContainer;
 
     private NioEventLoopGroup clientEventLoopGroup;
 
@@ -60,6 +57,6 @@ public class HttpProxyClient {
 
     public void connectTunnel() {
         logger.info("Proxy Client starting...");
-        upstreamChannel.writeAndFlush(Unpooled.wrappedBuffer("HTTP/1.1 200 Connection Established\r\n\r\n".getBytes()));
+        upstreamChannel.writeAndFlush(Unpooled.wrappedBuffer((protocolVersion+" 200 Connection Established\r\n\r\n").getBytes()));
     }
 }

@@ -1,11 +1,9 @@
 package cc.leevi.common.httpproxy.downstream;
 
-import cc.leevi.common.httpproxy.HttpProxyChannelContainer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
