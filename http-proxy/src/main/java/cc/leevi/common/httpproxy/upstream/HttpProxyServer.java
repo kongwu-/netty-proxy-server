@@ -15,8 +15,6 @@ public class HttpProxyServer {
 
     private EventLoopGroup serverEventLoopGroup;
 
-    private volatile int status = 0;
-
     private Channel acceptorChannel;
 
     public void startServer(){

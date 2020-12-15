@@ -17,19 +17,16 @@ public class HttpProxyClient {
 
     private Bootstrap clientBootstrap;
 
-    private volatile int status = 0;
-
     private String host;
 
     private int port;
 
     private String protocolVersion;
 
-    private EventLoop upstreamEventLoop;
-
     private NioEventLoopGroup clientEventLoopGroup;
 
     private Channel channel;
+
     private Channel upstreamChannel;
 
     public HttpProxyClient(String host, int port, String protocolVersion) {
