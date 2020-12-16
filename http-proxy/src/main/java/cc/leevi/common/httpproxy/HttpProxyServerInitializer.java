@@ -1,4 +1,4 @@
-package cc.leevi.common.httpproxy.upstream;
+package cc.leevi.common.httpproxy;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -10,6 +10,6 @@ public class HttpProxyServerInitializer extends ChannelInitializer {
     protected void initChannel(Channel channel) throws Exception {
         ChannelPipeline p = channel.pipeline();
         p.addLast(new LoggingHandler());
-        p.addLast(new HttpProxyServerConnectHandler());
+        p.addLast(new HttpServerHeadDecoder());
     }
 }

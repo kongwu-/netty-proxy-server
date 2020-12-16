@@ -46,7 +46,10 @@ public final class SocksServerHandler extends SimpleChannelInboundHandler<SocksM
         if (socksRequest instanceof Socks5InitialRequest) {
             ctx.pipeline().addFirst(new Socks5CommandRequestDecoder());
             ctx.write(new DefaultSocks5InitialResponse(Socks5AuthMethod.NO_AUTH));
+            //如果需要密码，这里可以换成
+//            ctx.write(new DefaultSocks5InitialResponse(Socks5AuthMethod.PASSWORD));
         } else if (socksRequest instanceof Socks5PasswordAuthRequest) {
+            //如果需要密码，这里需要验证密码
             ctx.pipeline().addFirst(new Socks5CommandRequestDecoder());
             ctx.write(new DefaultSocks5PasswordAuthResponse(Socks5PasswordAuthStatus.SUCCESS));
         } else if (socksRequest instanceof Socks5CommandRequest) {

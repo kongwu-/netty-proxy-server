@@ -1,4 +1,4 @@
-package cc.leevi.common.httpproxy.upstream;
+package cc.leevi.common.httpproxy;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -7,9 +7,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpProxyServer {
+public class HttpServer {
 
-    private Logger logger = LoggerFactory.getLogger(HttpProxyServer.class);
+    private Logger logger = LoggerFactory.getLogger(HttpServer.class);
 
     private ServerBootstrap serverBootstrap;
 
@@ -26,7 +26,7 @@ public class HttpProxyServer {
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new HttpProxyServerInitializer())
                 .group(serverEventLoopGroup);
-        acceptorChannel = serverBootstrap.bind(8080).syncUninterruptibly().channel();
+        acceptorChannel = serverBootstrap.bind(7891).syncUninterruptibly().channel();
     }
 
     public void shutdown(){

@@ -1,30 +1,21 @@
-package cc.leevi.common.httpproxy.upstream;
+package cc.leevi.common.httpproxy;
 
-import cc.leevi.common.httpproxy.downstream.HttpProxyClient;
 import com.google.common.net.HostAndPort;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.ByteProcessor;
 import io.netty.util.internal.AppendableCharSequence;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
-public class HttpProxyServerConnectHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class HttpServerHeadDecoder extends SimpleChannelInboundHandler<ByteBuf> {
 
-    private HeadLineByteProcessor headLineByteProcessor;
+    private HttpServerHeadDecoder.HeadLineByteProcessor headLineByteProcessor = new HttpServerHeadDecoder.HeadLineByteProcessor();
 
-    private HttpProxyClient httpProxyClient;
-
-    public HttpProxyServerConnectHandler() {
-        headLineByteProcessor = new HeadLineByteProcessor();
-    }
+    private
 
     class HeadLineByteProcessor implements ByteProcessor{
         private AppendableCharSequence seq;
@@ -61,49 +52,36 @@ public class HttpProxyServerConnectHandler extends SimpleChannelInboundHandler<B
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-        if(httpProxyClient == null){
-            if(in.isReadable()){
-                AppendableCharSequence seq = headLineByteProcessor.parse(in);
-                if(seq.charAt(seq.length()-1) == HttpConstants.LF){
-                    connectToDownstream(seq,in,ctx.channel());
+        AppendableCharSequence seq = headLineByteProcessor.parse(in);
+        if(seq.charAt(seq.length()-1) == HttpConstants.LF){
+            HttpProxyRequestHead httpProxyRequestHead;
+            String[] splitInitialLine = splitInitialLine(seq);
+            String method = splitInitialLine[0];
+            String uri = splitInitialLine[1];
+            String protocolVersion = splitInitialLine[2];
+            String host;
+            int port;
+            if(HttpMethod.CONNECT.name().equals(method)){
+                //https tunnel proxy
+                HostAndPort hostAndPort = HostAndPort.fromString(uri);
+                host = hostAndPort.getHost();
+                port = hostAndPort.getPort();
+
+                httpProxyRequestHead = new HttpProxyRequestHead(host, port, "TUNNEL",protocolVersion,null);
+            }else{
+                //http proxy
+                URL url = new URL(uri);
+                host = url.getHost();
+                port = url.getPort();
+                if(port == -1){
+                    port = 80;
                 }
-            }
-        }else{
-            httpProxyClient.write(in);
-        }
-    }
 
-    private void connectToDownstream(AppendableCharSequence sb,ByteBuf msg, Channel channel) throws Exception {
-        String[] splitInitialLine = splitInitialLine(sb);
-        String method = splitInitialLine[0];
-        String uri = splitInitialLine[1];
-        String protocolVersion = splitInitialLine[2];
-        String host;
-        int port;
-        if(HttpMethod.CONNECT.name().equals(method)){
-            //https tunnel proxy
-            HostAndPort hostAndPort = HostAndPort.fromString(uri);
-            host = hostAndPort.getHost();
-            port = hostAndPort.getPort();
-            httpProxyClient = new HttpProxyClient(host, port, protocolVersion);
-            httpProxyClient.prepareProxyClient(channel);
-            //http runnel proxy don't forward headline
-            httpProxyClient.connectTunnel();
-        }else{
-            //http proxy
-            URL url = new URL(uri);
-            host = url.getHost();
-            port = url.getPort();
-            if(port == -1){
-                port = 80;
+                httpProxyRequestHead = new HttpProxyRequestHead(host, port, protocolVersion,"WEB",in.resetReaderIndex());
             }
-            httpProxyClient = new HttpProxyClient(host, port, protocolVersion);
-            httpProxyClient.prepareProxyClient(channel);
-            msg.resetReaderIndex();
-            //http proxy forward headline
-            httpProxyClient.write(msg);
+            ctx.pipeline().addLast(new HttpServerConnectHandler()).remove(this);
+            ctx.fireChannelRead(httpProxyRequestHead);
         }
-
     }
 
     private static String[] splitInitialLine(AppendableCharSequence sb) {
@@ -186,9 +164,4 @@ public class HttpProxyServerConnectHandler extends SimpleChannelInboundHandler<B
         return ch == ' ' || ch == (char) 0x09;
     }
 
-    public static void main(String[] args) throws MalformedURLException {
-        URL url = new URL("http://localhost:8080/asdf");
-        System.out.println(url.getHost());
-        System.out.println(url.getPort());
-    }
 }

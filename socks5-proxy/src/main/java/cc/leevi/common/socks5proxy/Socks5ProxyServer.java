@@ -3,6 +3,8 @@ package cc.leevi.common.socks5proxy;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +24,9 @@ public class Socks5ProxyServer {
 
         serverBootstrap = new ServerBootstrap()
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new HttpProxyServerInitializer())
+                .childHandler(new SocksServerInitializer())
                 .group(serverEventLoopGroup);
-        acceptorChannel = serverBootstrap.bind(8080).syncUninterruptibly().channel();
+        acceptorChannel = serverBootstrap.bind(1080).syncUninterruptibly().channel();
     }
 
     public void shutdown(){

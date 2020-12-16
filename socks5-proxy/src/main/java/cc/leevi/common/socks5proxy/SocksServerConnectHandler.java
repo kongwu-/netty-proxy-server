@@ -16,6 +16,7 @@
 package cc.leevi.common.socks5proxy;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -42,58 +43,9 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final SocksMessage message) throws Exception {
-        if (message instanceof Socks4CommandRequest) {
-            final Socks4CommandRequest request = (Socks4CommandRequest) message;
-            Promise<Channel> promise = ctx.executor().newPromise();
-            promise.addListener(
-                    new FutureListener<Channel>() {
-                        @Override
-                        public void operationComplete(final Future<Channel> future) throws Exception {
-                            final Channel outboundChannel = future.getNow();
-                            if (future.isSuccess()) {
-                                ChannelFuture responseFuture = ctx.channel().writeAndFlush(
-                                        new DefaultSocks4CommandResponse(Socks4CommandStatus.SUCCESS));
+        final Socks5CommandRequest request = (Socks5CommandRequest) message;
 
-                                responseFuture.addListener(new ChannelFutureListener() {
-                                    @Override
-                                    public void operationComplete(ChannelFuture channelFuture) {
-                                        ctx.pipeline().remove(SocksServerConnectHandler.this);
-                                        outboundChannel.pipeline().addLast(new RelayHandler(ctx.channel()));
-                                        ctx.pipeline().addLast(new RelayHandler(outboundChannel));
-                                    }
-                                });
-                            } else {
-                                ctx.channel().writeAndFlush(
-                                        new DefaultSocks4CommandResponse(Socks4CommandStatus.REJECTED_OR_FAILED));
-                                SocksServerUtils.closeOnFlush(ctx.channel());
-                            }
-                        }
-                    });
-
-            final Channel inboundChannel = ctx.channel();
-            b.group(inboundChannel.eventLoop())
-                    .channel(NioSocketChannel.class)
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
-                    .handler(new DirectClientHandler(promise));
-
-            b.connect(request.dstAddr(), request.dstPort()).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    if (future.isSuccess()) {
-                        // Connection established use handler provided results
-                    } else {
-                        // Close the connection if the connection attempt has failed.
-                        ctx.channel().writeAndFlush(
-                                new DefaultSocks4CommandResponse(Socks4CommandStatus.REJECTED_OR_FAILED)
-                        );
-                        SocksServerUtils.closeOnFlush(ctx.channel());
-                    }
-                }
-            });
-        } else if (message instanceof Socks5CommandRequest) {
-            final Socks5CommandRequest request = (Socks5CommandRequest) message;
-            Promise<Channel> promise = ctx.executor().newPromise();
+        Promise<Channel> promise = ctx.executor().newPromise();
             promise.addListener(
                     new FutureListener<Channel>() {
                         @Override
@@ -143,9 +95,6 @@ public final class SocksServerConnectHandler extends SimpleChannelInboundHandler
                     }
                 }
             });
-        } else {
-            ctx.close();
-        }
     }
 
     @Override

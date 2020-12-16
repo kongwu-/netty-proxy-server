@@ -1,6 +1,5 @@
 package cc.leevi.common.httpproxy;
 
-import cc.leevi.common.httpproxy.upstream.HttpProxyServer;
 import com.google.common.net.HostAndPort;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +14,8 @@ public class HttpProxyClientTest {
 
     @Test
     public void startServer() throws IOException {
-        HttpProxyServer httpProxyServer = new HttpProxyServer();
-        httpProxyServer.startServer();
+        HttpServer httpServer = new HttpServer();
+        httpServer.startServer();
         System.in.read();
     }
 
