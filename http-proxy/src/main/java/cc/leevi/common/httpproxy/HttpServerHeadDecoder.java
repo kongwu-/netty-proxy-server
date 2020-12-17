@@ -77,7 +77,7 @@ public class HttpServerHeadDecoder extends SimpleChannelInboundHandler<ByteBuf> 
                     port = 80;
                 }
 
-                httpProxyRequestHead = new HttpProxyRequestHead(host, port, protocolVersion,"WEB",in.resetReaderIndex());
+                httpProxyRequestHead = new HttpProxyRequestHead(host, port,"WEB",protocolVersion,in.retain().resetReaderIndex());
             }
             ctx.pipeline().addLast(new HttpServerConnectHandler()).remove(this);
             ctx.fireChannelRead(httpProxyRequestHead);
