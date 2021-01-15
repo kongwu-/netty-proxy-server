@@ -37,7 +37,6 @@ public final class HttpServerConnectHandler extends SimpleChannelInboundHandler<
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final HttpProxyRequestHead requestHead) throws Exception {
 
-
         Promise<Channel> promise = ctx.executor().newPromise();
         final Channel inboundChannel = ctx.channel();
         promise.addListener(
