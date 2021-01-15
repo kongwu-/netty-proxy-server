@@ -11,6 +11,7 @@
     <modules>
         <module>http-proxy</module>
         <module>socks5-proxy</module>
+        <module>mixin-proxy</module>
     </modules>
 
     <dependencyManagement>

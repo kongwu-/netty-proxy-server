@@ -1,15 +1,15 @@
-package cc.leevi.common.httpproxy;
+package cc.leevi.common.socks5proxy;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpServer {
-
-    private Logger logger = LoggerFactory.getLogger(HttpServer.class);
+public class MixinProxyServer {
+    private Logger logger = LoggerFactory.getLogger(MixinProxyServer.class);
 
     private ServerBootstrap serverBootstrap;
 
@@ -24,9 +24,9 @@ public class HttpServer {
 
         serverBootstrap = new ServerBootstrap()
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new HttpProxyServerInitializer())
+                .childHandler(new MixinServerInitializer())
                 .group(serverEventLoopGroup);
-        acceptorChannel = serverBootstrap.bind(17891).syncUninterruptibly().channel();
+        acceptorChannel = serverBootstrap.bind(8065).syncUninterruptibly().channel();
     }
 
     public void shutdown(){
